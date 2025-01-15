@@ -4,7 +4,7 @@ using Monolith.Module1.Shared;
 namespace Monolith.Module1
 {
     [Route("[module]/[controller]")]
-    internal class TestController : Controller
+    public class TestController : Controller
     {
         private readonly ITestService _testService;
 

@@ -25,14 +25,7 @@ namespace Monolith.Host
                 });
             });
 
-            services.AddControllers().ConfigureApplicationPartManager(manager =>
-            {
-                // Clear all auto detected controllers.
-                manager.ApplicationParts.Clear();
-
-                // Add feature provider to allow "internal" controller
-                manager.FeatureProviders.Add(new InternalControllerFeatureProvider());
-            });
+            services.AddControllers();
 
             // Register a convention allowing to us to prefix routes to modules.
             services.AddTransient<IPostConfigureOptions<MvcOptions>, ModuleRoutingMvcOptionsPostConfigure>();
@@ -52,14 +45,12 @@ namespace Monolith.Host
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-
             // Adds endpoints defined in modules
             var modules = app.ApplicationServices.GetRequiredService<IEnumerable<Module>>();
             foreach (var module in modules)
             {
-                app.Map($"/{module.RoutePrefix}", builder =>
+                app.MapWhen(context => context.Request.Path.StartsWithSegments($"/{module.RoutePrefix}"), builder =>
+                //app.Map($"/{module.RoutePrefix}", builder =>
                 {
                     builder.UseRouting();
                     module.Startup.Configure(builder, env);
